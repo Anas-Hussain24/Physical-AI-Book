@@ -5,22 +5,30 @@ on:
     branches:
       - main
 
+# Give GITHUB_TOKEN the rights we need to push pages
+permissions:
+  contents: write   # required to push commits
+  pages: write      # required to manage Pages
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     defaults:
       run:
-        working-directory: classic    # run steps use the 'classic' folder
+        working-directory: classic
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # keep default persist-credentials true so actions can push using GITHUB_TOKEN
+          fetch-depth: 0
 
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'        # <-- ensure Node >= 20 is used
+          node-version: '20.x'
 
       - name: Show node/npm versions
         run: |
@@ -28,13 +36,31 @@ jobs:
           npm -v
 
       - name: Install dependencies
-        run: npm ci                    # faster / reproducible install
+        run: npm ci
 
       - name: Build website
-        run: npm run build             # runs in 'classic' because of defaults
+        run: npm run build
+
+      - name: Validate publish_dir exists
+        run: |
+          echo "PWD: $(pwd)"
+          ls -la
+          if [ ! -d "./build" ]; then
+            echo "ERROR: build directory missing at classic/build"
+            ls -la ..
+            exit 1
+          fi
+          echo "publish_dir exists: classic/build"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
+          publish_branch: gh-pages
+          publish_dir: classic/build
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: classic/build   # <-- publish the correct folder
+          # set git user so commits have author info
+          user_name: "github-actions[bot]"
+          user_email: "41898282+github-actions[bot]@users.noreply.github.com"
+          # keep history clean if you want that (optional)
+          # force_orphan: true
+          # commit_message: "ci: deploy docs (via GitHub Actions)"
