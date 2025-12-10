@@ -20,13 +20,14 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        run: npm install
+        run: cd Physical-AI-Book && npm install
 
       - name: Build website
-        run: npm run build
+        run: cd Physical-AI-Book && npm run build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build
+          publish_dir: Physical-AI-Book/build
+
