@@ -8,11 +8,12 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: classic   # <-- tell Actions to use 'classic' folder
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
       - name: Use Node.js
         uses: actions/setup-node@v4
@@ -20,14 +21,13 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        run: cd Physical-AI-Book && npm install
+        run: npm install
 
       - name: Build website
-        run: cd Physical-AI-Book && npm run build
+        run: npm run build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: Physical-AI-Book/build
-
+          publish_dir: build
